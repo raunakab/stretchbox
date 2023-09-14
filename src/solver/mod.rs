@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 use cherrytree::{Node, Tree};
 use indexmap::IndexSet;
 
-use crate::{Constraint, ConstraintKey, Fill, Frame, FrameKey, Padding};
+use crate::{Constraint, ConstraintKey, Fill, Frame, FrameKey, Padding, Align};
 
 pub(super) fn solve(
     constraint_tree: &Tree<ConstraintKey, Constraint>,
@@ -41,6 +41,7 @@ pub(super) fn solve(
                 root_constraint_node.child_keys,
                 root_frame_key,
                 root_content_frame,
+                root_constraint_node.value.align_x,
             );
         }
 
@@ -55,9 +56,10 @@ fn solve_child_keys(
     constraint_keys: &IndexSet<ConstraintKey>,
     parent_frame_key: FrameKey,
     content_frame: Frame,
+    align_x: Align,
 ) {
     let mut data = iter(constraint_tree, constraint_keys)
-        .map(|(constraint_key, constraint_node)| (constraint_key, constraint_node, None::<f64>))
+        .map(|(constraint_key, constraint_node)| (constraint_key, constraint_node, None))
         .collect::<Vec<_>>();
 
     let mut remaining_length_x = content_frame.length_x;
@@ -85,16 +87,36 @@ fn solve_child_keys(
         }
     }
 
-    if total_scale != 0 {
-        for (_, constraint_node, current_length_x) in data.iter_mut() {
-            if let Fill::Scale(scale) = constraint_node.value.fill_x {
-                let length_x = ((scale as f64) / (total_scale as f64)) * remaining_length_x;
-                *current_length_x = Some(length_x);
-            }
-        }
-    }
+    let remaining_length_x = remaining_length_x.max(0.);
 
-    let mut offset_x: f64 = content_frame.offset_x;
+    let mut offset_x = match total_scale {
+        0 => {
+            if remaining_length_x == 0. {
+                content_frame.offset_x
+            }
+            else {
+                match align_x {
+                    Align::Start => content_frame.offset_x,
+                    Align::Middle => {
+                        let half_remaining_length_x = remaining_length_x / 2.;
+                        content_frame.offset_x + half_remaining_length_x
+                    },
+                    Align::End => content_frame.offset_x + remaining_length_x,
+                }
+            }
+        },
+        _ => {
+            for (_, constraint_node, current_length_x) in data.iter_mut() {
+                if let Fill::Scale(scale) = constraint_node.value.fill_x {
+                    let length_x = ((scale as f64) / (total_scale as f64)) * remaining_length_x;
+                    *current_length_x = Some(length_x);
+                }
+            }
+
+            content_frame.offset_x
+        },
+    };
+
     for (constraint_key, constraint_node, length_x) in data {
         let length_x = length_x.unwrap_or_default();
 
@@ -114,6 +136,7 @@ fn solve_child_keys(
             constraint_node.child_keys,
             frame_key,
             content_frame,
+            constraint_node.value.align_x,
         );
     }
 }
@@ -121,7 +144,7 @@ fn solve_child_keys(
 fn iter<'a>(
     constraint_tree: &'a Tree<ConstraintKey, Constraint>,
     constraint_keys: &'a IndexSet<ConstraintKey>,
-) -> impl Iterator<Item = (ConstraintKey, Node<'a, ConstraintKey, Constraint>)> {
+) -> impl ExactSizeIterator<Item = (ConstraintKey, Node<'a, ConstraintKey, Constraint>)> {
     constraint_keys.iter().map(|&constraint_key| {
         let constraint_node = constraint_tree.get(constraint_key).unwrap();
         (constraint_key, constraint_node)

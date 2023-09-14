@@ -186,6 +186,7 @@ impl Solver {
 pub struct Constraint {
     pub fill_x: Fill,
     pub padding: Padding,
+    pub align_x: Align,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -200,10 +201,19 @@ impl Default for Fill {
         Self::Scale(1)
     }
 }
+
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Padding {
     pub left: f64,
     pub right: f64,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub enum Align {
+    #[default]
+    Start,
+    Middle,
+    End,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
