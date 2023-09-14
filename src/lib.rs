@@ -47,7 +47,7 @@ impl Solver {
 
     // Insertion/removal methods:
 
-    pub fn insert_root(&mut self, constraint: Constraint) -> ConstraintKey {
+    pub fn insert_root(&mut self, constraint: Constraint) -> Option<ConstraintKey> {
         self.insert_root_with_capacity(constraint, 0)
     }
 
@@ -55,12 +55,14 @@ impl Solver {
         &mut self,
         constraint: Constraint,
         capacity: usize,
-    ) -> ConstraintKey {
-        let root_key = self
-            .constraint_tree
-            .insert_root_with_capacity(constraint, capacity);
-        self.is_dirty = true;
-        root_key
+    ) -> Option<ConstraintKey> {
+        matches!(constraint.fill_x, Fill::Scale(..)).then(|| {
+            let root_key = self
+                .constraint_tree
+                .insert_root_with_capacity(constraint, capacity);
+            self.is_dirty = true;
+            root_key
+        })
     }
 
     pub fn insert(
@@ -155,31 +157,27 @@ impl Solver {
 
     // Solve method:
 
-    pub fn solve(&mut self, length_x: f64) -> bool {
+    pub fn solve(&mut self, length_x: f64) {
         let is_dirty = self.is_dirty;
         let is_empty = self.constraint_tree.is_empty();
 
         match (is_dirty, is_empty) {
-            (true, true) => {
-                self.is_dirty = false;
-                true
-            }
+            (true, true) => self.is_dirty = false,
 
             (true, false) => {
                 let length_x = length_x.max(0.);
-                let did_solve = solve(
+
+                solve(
                     &self.constraint_tree,
                     &mut self.frame_tree,
                     &mut self.key_map,
                     length_x,
                 );
-                if did_solve {
-                    self.is_dirty = false;
-                };
-                did_solve
+
+                self.is_dirty = false;
             }
 
-            (false, _) => true,
+            (false, _) => (),
         }
     }
 }
@@ -208,7 +206,7 @@ pub struct Padding {
     pub right: f64,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Frame {
     pub offset_x: f64,
     pub length_x: f64,

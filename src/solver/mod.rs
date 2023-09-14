@@ -13,11 +13,10 @@ pub(super) fn solve(
     frame_tree: &mut Tree<FrameKey, Frame>,
     key_map: &mut BTreeMap<ConstraintKey, FrameKey>,
     length_x: f64,
-) -> bool {
+) {
     let (root_constraint_key, root_constraint_node) = constraint_tree.root_key_value().unwrap();
 
     match root_constraint_node.value.fill_x {
-        Fill::Exact(..) | Fill::Minimize => false,
         Fill::Scale(scale) => {
             let length_x = match scale {
                 0 => 0.,
@@ -43,9 +42,9 @@ pub(super) fn solve(
                 root_frame_key,
                 root_content_frame,
             );
-
-            true
         }
+
+        Fill::Exact(..) | Fill::Minimize => unreachable!(),
     }
 }
 
