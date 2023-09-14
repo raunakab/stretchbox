@@ -3,10 +3,10 @@ mod tests;
 
 use std::collections::BTreeMap;
 
-use cherrytree::{Tree, Node};
+use cherrytree::{Node, Tree};
 use indexmap::IndexSet;
 
-use crate::{ConstraintKey, Constraint, Fill, FrameKey, Frame, Padding};
+use crate::{Constraint, ConstraintKey, Fill, Frame, FrameKey, Padding};
 
 pub(super) fn solve(
     constraint_tree: &Tree<ConstraintKey, Constraint>,
@@ -32,7 +32,8 @@ pub(super) fn solve(
             let root_frame_key = frame_tree.insert_root(root_frame);
             key_map.insert(root_constraint_key, root_frame_key);
 
-            let root_content_frame = generate_content_frame(length_x, root_constraint_node.value.padding);
+            let root_content_frame =
+                generate_content_frame(length_x, root_constraint_node.value.padding);
 
             solve_child_keys(
                 constraint_tree,
@@ -154,13 +155,13 @@ fn find_minimizing_length_x(
     total_length_x
 }
 
-fn generate_content_frame(
-    length_x: f64,
-    padding: Padding,
-) -> Frame {
+fn generate_content_frame(length_x: f64, padding: Padding) -> Frame {
     let content_start_x = padding.left.min(length_x);
     let content_end_x = (length_x - padding.right).max(0.);
     let content_length_x = (content_end_x - content_start_x).max(0.);
 
-    Frame { offset_x: content_start_x, length_x: content_length_x }
+    Frame {
+        offset_x: content_start_x,
+        length_x: content_length_x,
+    }
 }
