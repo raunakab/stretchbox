@@ -3,6 +3,7 @@ mod solver;
 use std::collections::BTreeMap;
 
 use cherrytree::{Node, Tree};
+use indexmap::IndexSet;
 use slotmap::new_key_type;
 
 use crate::solver::solve;
@@ -88,6 +89,23 @@ impl Solver {
         root_key
     }
 
+    pub fn reorder_children<F>(
+        &mut self,
+        constraint_key: ConstraintKey,
+        get_reordered_constraint_keys: F,
+    ) -> bool
+    where
+        F: FnOnce(&IndexSet<ConstraintKey>) -> IndexSet<ConstraintKey>,
+    {
+        let did_reorder = self
+            .constraint_tree
+            .reorder_children(constraint_key, get_reordered_constraint_keys);
+        if did_reorder {
+            self.is_dirty = true;
+        };
+        did_reorder
+    }
+
     pub fn remove(
         &mut self,
         constraint_key: ConstraintKey,
@@ -98,6 +116,20 @@ impl Solver {
             self.is_dirty = true;
         };
         old_value
+    }
+
+    pub fn rebase(
+        &mut self,
+        consraint_key: ConstraintKey,
+        new_parent_consraint_key: ConstraintKey,
+    ) -> bool {
+        let did_rebase = self
+            .constraint_tree
+            .rebase(consraint_key, new_parent_consraint_key);
+        if did_rebase {
+            self.is_dirty = true;
+        };
+        did_rebase
     }
 
     pub fn clear(&mut self) {

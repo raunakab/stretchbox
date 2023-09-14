@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 use cherrytree::{Node, Tree};
 use indexmap::IndexSet;
 
-use crate::{Constraint, ConstraintKey, Fill, Frame, FrameKey, Padding, Align};
+use crate::{Align, Constraint, ConstraintKey, Fill, Frame, FrameKey, Padding};
 
 pub(super) fn solve(
     constraint_tree: &Tree<ConstraintKey, Constraint>,
@@ -93,18 +93,17 @@ fn solve_child_keys(
         0 => {
             if remaining_length_x == 0. {
                 content_frame.offset_x
-            }
-            else {
+            } else {
                 match align_x {
                     Align::Start => content_frame.offset_x,
                     Align::Middle => {
                         let half_remaining_length_x = remaining_length_x / 2.;
                         content_frame.offset_x + half_remaining_length_x
-                    },
+                    }
                     Align::End => content_frame.offset_x + remaining_length_x,
                 }
             }
-        },
+        }
         _ => {
             for (_, constraint_node, current_length_x) in data.iter_mut() {
                 if let Fill::Scale(scale) = constraint_node.value.fill_x {
@@ -114,7 +113,7 @@ fn solve_child_keys(
             }
 
             content_frame.offset_x
-        },
+        }
     };
 
     for (constraint_key, constraint_node, length_x) in data {
