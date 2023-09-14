@@ -204,8 +204,8 @@ impl Default for Fill {
 }
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Padding {
-    pub start_x: f64,
-    pub end_x: f64,
+    pub left: f64,
+    pub right: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

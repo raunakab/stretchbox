@@ -158,8 +158,8 @@ fn generate_content_frame(
     length_x: f64,
     padding: Padding,
 ) -> Frame {
-    let content_start_x = padding.start_x.min(length_x);
-    let content_end_x = (length_x - padding.end_x).max(0.);
+    let content_start_x = padding.left.min(length_x);
+    let content_end_x = (length_x - padding.right).max(0.);
     let content_length_x = (content_end_x - content_start_x).max(0.);
 
     Frame { offset_x: content_start_x, length_x: content_length_x }

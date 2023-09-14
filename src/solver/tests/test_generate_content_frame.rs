@@ -25,7 +25,7 @@ fn test_generate_content_frame_with_no_padding() {
 #[test]
 fn test_generate_content_frame_with_zero_length_x() {
     let length_x = 0.;
-    let padding = Padding { start_x: 10., end_x: 10. };
+    let padding = Padding { left: 10., right: 10. };
 
     let actual_content_frame = generate_content_frame(length_x, padding);
     let expected_content_frame = Frame { offset_x: 0., length_x: 0. };
@@ -36,7 +36,7 @@ fn test_generate_content_frame_with_zero_length_x() {
 #[test]
 fn test_generate_content_frame() {
     let length_x = 100.;
-    let padding = Padding { start_x: 10., end_x: 10. };
+    let padding = Padding { left: 10., right: 10. };
 
     let actual_content_frame = generate_content_frame(length_x, padding);
     let expected_content_frame = Frame { offset_x: 10., length_x: 80. };
@@ -47,7 +47,7 @@ fn test_generate_content_frame() {
 #[test]
 fn test_generate_content_frame_with_padding_start_x_greater_than_length_x() {
     let length_x = 100.;
-    let padding = Padding { start_x: 110., end_x: 10. };
+    let padding = Padding { left: 110., right: 10. };
 
     let actual_content_frame = generate_content_frame(length_x, padding);
     let expected_content_frame = Frame { offset_x: 100., length_x: 0. };
@@ -58,7 +58,7 @@ fn test_generate_content_frame_with_padding_start_x_greater_than_length_x() {
 #[test]
 fn test_generate_content_frame_with_padding_end_x_greater_than_length_x() {
     let length_x = 100.;
-    let padding = Padding { start_x: 10., end_x: 110. };
+    let padding = Padding { left: 10., right: 110. };
 
     let actual_content_frame = generate_content_frame(length_x, padding);
     let expected_content_frame = Frame { offset_x: 10., length_x: 0. };
@@ -69,7 +69,7 @@ fn test_generate_content_frame_with_padding_end_x_greater_than_length_x() {
 #[test]
 fn test_generate_content_frame_with_padding_start_x_and_end_x_greater_than_length_x() {
     let length_x = 100.;
-    let padding = Padding { start_x: 110., end_x: 110. };
+    let padding = Padding { left: 110., right: 110. };
 
     let actual_content_frame = generate_content_frame(length_x, padding);
     let expected_content_frame = Frame { offset_x: 100., length_x: 0. };
