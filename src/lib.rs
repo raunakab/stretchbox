@@ -57,7 +57,12 @@ impl Solver {
         constraint: Constraint,
         capacity: usize,
     ) -> Option<ConstraintKey> {
-        matches!(constraint.fill_x, Fill::Scale(..)).then(|| {
+        let both_fills_are_absolute_scales = matches! { constraint.fill, Fill::Absolute { x: FillType::Scale(..), y: FillType::Scale(..) }};
+        let both_fills_are_relative_scales = matches! { constraint.fill, Fill::Relative { main: FillType::Scale(..), cross: FillType::Scale(..) }};
+
+        let both_fills_are_scales = both_fills_are_absolute_scales | both_fills_are_relative_scales;
+
+        both_fills_are_scales.then(|| {
             let root_key = self
                 .constraint_tree
                 .insert_root_with_capacity(constraint, capacity);
@@ -189,7 +194,7 @@ impl Solver {
 
     // Solve method:
 
-    pub fn solve(&mut self, length_x: f64) {
+    pub fn solve(&mut self, length_x: f64, length_y: f64) {
         let is_dirty = self.is_dirty;
         let is_empty = self.constraint_tree.is_empty();
 
@@ -198,12 +203,14 @@ impl Solver {
 
             (true, false) => {
                 let length_x = length_x.max(0.);
+                let length_y = length_y.max(0.);
 
                 solve(
                     &self.constraint_tree,
                     &mut self.frame_tree,
                     &mut self.key_map,
                     length_x,
+                    length_y,
                 );
 
                 self.is_dirty = false;
@@ -216,31 +223,96 @@ impl Solver {
 
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct Constraint {
-    pub fill_x: Fill,
-    pub padding: Padding,
-    pub align_x: Align,
+    pub fill: Fill,
+    pub content: Content,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Fill {
+    Absolute { x: FillType, y: FillType },
+    Relative { main: FillType, cross: FillType },
+}
+
+impl Fill {
+    fn to_absolute_fill(self, direction: Direction) -> AbsoluteFill {
+        match self {
+            Self::Absolute { x, y } => AbsoluteFill { x, y },
+            Self::Relative { main, cross } => match direction {
+                Direction::Horizontal => AbsoluteFill { x: main, y: cross },
+                Direction::Vertical => AbsoluteFill { x: cross, y: main },
+            },
+        }
+    }
+
+    fn to_absolute_fill_horizontal(self) -> AbsoluteFill {
+        match self {
+            Self::Absolute { x, y } => AbsoluteFill { x, y },
+            Self::Relative { main, cross } => AbsoluteFill { x: main, y: cross },
+        }
+    }
+
+    fn to_absolute_fill_vertical(self) -> AbsoluteFill {
+        match self {
+            Self::Absolute { x, y } => AbsoluteFill { x, y },
+            Self::Relative { main, cross } => AbsoluteFill { x: cross, y: main },
+        }
+    }
+}
+
+impl Default for Fill {
+    fn default() -> Self {
+        Self::Relative {
+            main: FillType::default(),
+            cross: FillType::default(),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+struct AbsoluteFill {
+    x: FillType,
+    y: FillType,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum FillType {
     Exact(f64),
     Scale(usize),
     Minimize,
 }
 
-impl Default for Fill {
+impl Default for FillType {
     fn default() -> Self {
         Self::Scale(1)
     }
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
-pub struct Padding {
-    pub left: f64,
-    pub right: f64,
+pub struct Content {
+    pub direction: Direction,
+    pub padding: Padding,
+    pub align_main: Align,
+    pub align_cross: Align,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
+pub struct Padding {
+    pub left: f64,
+    pub right: f64,
+
+    pub top: f64,
+    pub bottom: f64,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Direction {
+    Horizontal,
+
+    #[default]
+    Vertical,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Align {
     #[default]
     Start,
@@ -252,4 +324,7 @@ pub enum Align {
 pub struct Frame {
     pub offset_x: f64,
     pub length_x: f64,
+
+    pub offset_y: f64,
+    pub length_y: f64,
 }
