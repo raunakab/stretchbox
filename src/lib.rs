@@ -234,27 +234,13 @@ pub enum Fill {
 }
 
 impl Fill {
-    fn to_absolute_fill(self, direction: Direction) -> AbsoluteFill {
+    fn to_relative_fill(self, direction: Direction) -> RelativeFill {
         match self {
-            Self::Absolute { x, y } => AbsoluteFill { x, y },
-            Self::Relative { main, cross } => match direction {
-                Direction::Horizontal => AbsoluteFill { x: main, y: cross },
-                Direction::Vertical => AbsoluteFill { x: cross, y: main },
+            Self::Absolute { x, y } => match direction {
+                Direction::Horizontal => RelativeFill { main: x, cross: y },
+                Direction::Vertical => RelativeFill { main: y, cross: x },
             },
-        }
-    }
-
-    fn to_absolute_fill_horizontal(self) -> AbsoluteFill {
-        match self {
-            Self::Absolute { x, y } => AbsoluteFill { x, y },
-            Self::Relative { main, cross } => AbsoluteFill { x: main, y: cross },
-        }
-    }
-
-    fn to_absolute_fill_vertical(self) -> AbsoluteFill {
-        match self {
-            Self::Absolute { x, y } => AbsoluteFill { x, y },
-            Self::Relative { main, cross } => AbsoluteFill { x: cross, y: main },
+            Self::Relative { main, cross } => RelativeFill { main, cross },
         }
     }
 }
@@ -269,9 +255,9 @@ impl Default for Fill {
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
-struct AbsoluteFill {
-    x: FillType,
-    y: FillType,
+struct RelativeFill {
+    main: FillType,
+    cross: FillType,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -304,6 +290,26 @@ pub struct Padding {
     pub bottom: f64,
 }
 
+impl Padding {
+    fn to_relative_padding(self, direction: Direction) -> RelativePadding {
+        let Self { left, right, top, bottom } = self;
+
+        match direction {
+            Direction::Horizontal => RelativePadding { main_start: left, main_end: right, cross_start: top, cross_end: bottom },
+            Direction::Vertical => RelativePadding { main_start: top, main_end: bottom, cross_start: left, cross_end: right },
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+struct RelativePadding {
+    pub main_start: f64,
+    pub main_end: f64,
+
+    pub cross_start: f64,
+    pub cross_end: f64,
+}
+
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Direction {
     Horizontal,
@@ -327,4 +333,24 @@ pub struct Frame {
 
     pub offset_y: f64,
     pub length_y: f64,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
+struct RelativeFrame {
+    pub offset_main: f64,
+    pub length_main: f64,
+
+    pub offset_cross: f64,
+    pub length_cross: f64,
+}
+
+impl RelativeFrame {
+    fn to_frame(self, direction: Direction) -> Frame {
+        let Self { offset_main, length_main, offset_cross, length_cross } = self;
+
+        match direction {
+            Direction::Horizontal => Frame { offset_x: offset_main, length_x: length_main, offset_y: offset_cross, length_y: length_cross },
+            Direction::Vertical => Frame { offset_x: offset_cross, length_x: length_cross, offset_y: offset_main, length_y: length_main },
+        }
+    }
 }
