@@ -2,6 +2,10 @@
 name = "stretchbox"
 version = "0.1.0"
 edition = "2021"
+authors = [
+    "Raunak Bhagat <rabhagat31@gmail.com>",
+]
+description = "A 2-dimensional layout solver."
 
 [dependencies]
 cherrytree = { path = "../cherrytree" }
