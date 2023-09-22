@@ -2,7 +2,7 @@
 mod common;
 
 use common::{make_frame_tree, make_solver};
-use stretchbox::{Constraint, Frame, Fill, FillType};
+use stretchbox::{Constraint, Fill, FillType, Frame};
 
 #[test]
 fn test_solver_with_empty_tree() {
@@ -31,6 +31,7 @@ fn test_solver_with_single_element_tree() {
     solver.solve(10., 10.);
 
     let actual_frame_tree = make_frame_tree(&solver);
-    let expected_frame_tree = Some(node! { Frame { offset_x: 0., length_x: 10., offset_y: 0., length_y: 10. }});
+    let expected_frame_tree =
+        Some(node! { Frame { offset_x: 0., length_x: 10., offset_y: 0., length_y: 10. }});
     assert_eq!(actual_frame_tree, expected_frame_tree);
 }

@@ -292,11 +292,26 @@ pub struct Padding {
 
 impl Padding {
     fn to_relative_padding(self, direction: Direction) -> RelativePadding {
-        let Self { left, right, top, bottom } = self;
+        let Self {
+            left,
+            right,
+            top,
+            bottom,
+        } = self;
 
         match direction {
-            Direction::Horizontal => RelativePadding { main_start: left, main_end: right, cross_start: top, cross_end: bottom },
-            Direction::Vertical => RelativePadding { main_start: top, main_end: bottom, cross_start: left, cross_end: right },
+            Direction::Horizontal => RelativePadding {
+                main_start: left,
+                main_end: right,
+                cross_start: top,
+                cross_end: bottom,
+            },
+            Direction::Vertical => RelativePadding {
+                main_start: top,
+                main_end: bottom,
+                cross_start: left,
+                cross_end: right,
+            },
         }
     }
 }
@@ -346,11 +361,26 @@ struct RelativeFrame {
 
 impl RelativeFrame {
     fn to_frame(self, direction: Direction) -> Frame {
-        let Self { offset_main, length_main, offset_cross, length_cross } = self;
+        let Self {
+            offset_main,
+            length_main,
+            offset_cross,
+            length_cross,
+        } = self;
 
         match direction {
-            Direction::Horizontal => Frame { offset_x: offset_main, length_x: length_main, offset_y: offset_cross, length_y: length_cross },
-            Direction::Vertical => Frame { offset_x: offset_cross, length_x: length_cross, offset_y: offset_main, length_y: length_main },
+            Direction::Horizontal => Frame {
+                offset_x: offset_main,
+                length_x: length_main,
+                offset_y: offset_cross,
+                length_y: length_cross,
+            },
+            Direction::Vertical => Frame {
+                offset_x: offset_cross,
+                length_x: length_cross,
+                offset_y: offset_main,
+                length_y: length_main,
+            },
         }
     }
 }
