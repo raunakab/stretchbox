@@ -5,6 +5,7 @@ version = 3
 [[package]]
 name = "cherrytree"
 version = "0.1.0"
+source = "git+https://github.com/raunakab/cherrytree#75aabcb9e4a54f8176ee15bd331275c07229e6b5"
 dependencies = [
  "indexmap",
  "slotmap",

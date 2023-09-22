@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-cherrytree = { path = "../cherrytree" }
+cherrytree = { git = "https://github.com/raunakab/cherrytree" }
 indexmap = "2.0.0"
 petgraph = "0.6.4"
 slotmap = "1.0.6"
